@@ -4,8 +4,16 @@ typedef chrono::steady_clock timer;
 int main(int argc, char* argv[]) {
 	int ary_min_size = 0;
 	vector<int> array;
-	if (argv[1][0] == 't') {
+	if (argv[1] == NULL) {
+		cout << "Error: must have command at [1]" << endl;
+		return 0;
+	}
+	else if (argv[1][0] == 't') {
 		time_tests();
+		return 0;
+	}
+	else if (isalpha(argv[1][0])) {
+		cout << "Error: Unknown command at [1]." << endl << "All arguments must either be /'t/' for test cases or a number for k" << endl;
 		return 0;
 	}
 
@@ -107,19 +115,49 @@ void time_tests() {
 	//three tests per k
 	//min 60 tests
 	//20 diff K each ran 3 times
-	vector<vector<chrono::duration<float>>> time_table;
+	vector<chrono::duration<float>> time_table;
 	chrono::duration<float> sum_of_times;
 	chrono::duration<float> average_of_times;
-	time_table.resize(20);
+	time_table.resize(300);
 	timer::time_point start, stop;
 	chrono::duration<double> time_span;
 
-	for (int k = 1; k <= 39; k += 2) {
-		//test with already sorted list
+	srand(time(NULL));
+	int t = 0; //used for incrementing the time table vector
+	int k = 1;
+
+	for (int l = 0; l < 300; l++) {
 		vector<int> array;
-		for (int i = -500; i < 500; i++) {
-			array.push_back(i + 1);
+		cout << "K = " << k << "(k # = " << l << ") " << endl;
+		for (int i = 0; i < 3; i++) {
+			for (int x = 0; x < 1000; x++) {
+				array.push_back(rand());
+			}
+
+			start = timer::now();
+			Merge_Sort(array, 0, sizeof(array), k);
+			stop = timer::now();
+
+			time_span = chrono::duration_cast<chrono::duration<float>>(stop - start);
+
+			if (i == 0) {
+				sum_of_times = time_span;
+			}
+			else {
+				sum_of_times += time_span;
+			}
+
+			cout << "	Duration of test " << i + 1 << ": " << time_span.count() << " seconds" << endl;
+			array.clear();
+
 		}
+		cout << endl;
+		average_of_times = sum_of_times / 3;
+		time_table[k - 1] = average_of_times;
+		k++;
+	}
+
+		/*
 		start = timer::now();
 		Merge_Sort(array, 0, sizeof(array), k);
 		stop = timer::now();
@@ -206,6 +244,7 @@ void time_tests() {
 
 	//calculate k = 39 random list time in seconds
 	cout << "k = 39 random list time = " << time_table[19][2].count() << " seconds" << endl << endl;
+	*/
 
 	return;
 
