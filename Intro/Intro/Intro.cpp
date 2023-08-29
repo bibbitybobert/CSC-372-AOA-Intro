@@ -1,14 +1,15 @@
 #include "IntroHeader.h"
-typedef chrono::steady_clock timer;
+typedef chrono::high_resolution_clock timer;
 
 int main(int argc, char* argv[]) {
 	int ary_min_size = 0;
 	vector<int> array;
+	//error checking
 	if (argv[1] == NULL) {
 		cout << "Error: must have command at [1]" << endl;
 		return 0;
 	}
-	else if (argv[1][0] == 't') {
+	else if (argv[1][0] == 't') { //if you want to run automated testing, use argument 't' when running the program
 		time_tests();
 		return 0;
 	}
@@ -25,7 +26,9 @@ int main(int argc, char* argv[]) {
 		array.push_back(atoi(argv[i]));
 	}
 
+	//sort the given list
 	Merge_Sort(array, 0, (array.size() - 1), ary_min_size);
+
 
 	cout << "SUCCESS!" << endl << "Sorted Array: ";
 	for (int i = 0; i < array.size(); i++) {
@@ -36,7 +39,8 @@ int main(int argc, char* argv[]) {
 
 }
 
-
+//GRADING: MERGE
+//from Introduction to Algorithms" by Thomas H. Cormen, Charles E. Leiserson page 37
 void Merge_Sort(vector<int>& array, int start, int end, int ary_min_size) {
 	if ((end - start) < ary_min_size) {
 		Insert_Sort(array, end);
@@ -53,6 +57,7 @@ void Merge_Sort(vector<int>& array, int start, int end, int ary_min_size) {
 	return;
 }
 
+////from Introduction to Algorithms" by Thomas H. Cormen, Charles E. Leiserson page 35
 void Merge(vector<int>& array, int start, int mid, int end) {
 	int len_top = mid - start + 1;
 	int len_back = end - mid;
@@ -97,6 +102,8 @@ void Merge(vector<int>& array, int start, int mid, int end) {
 	return;
 }
 
+//GRADING: INSERTION
+//from Introduction to Algorithms" by Thomas H. Cormen, Charles E. Leiserson page 19
 void Insert_Sort(vector<int>& array, int array_size) {
 	for (int i = 1; i <= array_size; i++) {
 		int key = array[i];
@@ -110,12 +117,9 @@ void Insert_Sort(vector<int>& array, int array_size) {
 	return;
 }
 
+//automated test cases
 void time_tests() {
-	//vary k with same number of elements = 1000
-	//three tests per k
-	//min 60 tests
-	//20 diff K each ran 3 times
-	vector<chrono::duration<float>> time_table;
+	vector<vector<chrono::duration<float>>> time_table;
 	chrono::duration<float> sum_of_times;
 	chrono::duration<float> average_of_times;
 	time_table.resize(300);
@@ -126,9 +130,10 @@ void time_tests() {
 	int t = 0; //used for incrementing the time table vector
 	int k = 1;
 
+	//testing k = 1 -> 300 with randomized arrays
 	for (int l = 0; l < 300; l++) {
 		vector<int> array;
-		cout << "K = " << k << "(k # = " << l << ") " << endl;
+		//cout << "K = " << k << "(k # = " << l << ") " << endl; //used for data confirmation
 		for (int i = 0; i < 3; i++) {
 			for (int x = 0; x < 1000; x++) {
 				array.push_back(rand());
@@ -139,6 +144,7 @@ void time_tests() {
 			stop = timer::now();
 
 			time_span = chrono::duration_cast<chrono::duration<float>>(stop - start);
+			time_table[k - 1].push_back(time_span);
 
 			if (i == 0) {
 				sum_of_times = time_span;
@@ -147,104 +153,86 @@ void time_tests() {
 				sum_of_times += time_span;
 			}
 
-			cout << "	Duration of test " << i + 1 << ": " << time_span.count() << " seconds" << endl;
+			//cout << "	Duration of test " << i + 1 << ": " << setprecision(10) << time_span.count() << " seconds" << endl; //used for data confirmation
 			array.clear();
 
 		}
-		cout << endl;
 		average_of_times = sum_of_times / 3;
-		time_table[k - 1] = average_of_times;
+		//cout << "average: " << average_of_times.count() << endl; //used for data confirmation
+		time_table[k - 1].push_back(average_of_times);
 		k++;
-	}
-
-		/*
-		start = timer::now();
-		Merge_Sort(array, 0, sizeof(array), k);
-		stop = timer::now();
-
-		time_span = chrono::duration_cast<chrono::duration<float>>(stop - start);
-		cout << "duration of k = " << k << " sorted forwards = " << setprecision(5) << time_span.count() * 1000000 << " microseconds" << endl;
-		sum_of_times = time_span;
-		time_table[((k + 1) / 2) - 1].push_back(time_span);
-
-		//test sorted backwards
-		array.clear();
-		for (int i = 500; i > -500; i--) {
-			array.push_back(i);
-		}
-		start = timer::now();
-		Merge_Sort(array, 0, sizeof(array), k);
-		stop = timer::now();
-
-		time_span = chrono::duration_cast<chrono::duration<float>>(stop - start);
-		cout << "duration of k = " << k << " sorted backwards = " << setprecision(5) << time_span.count() * 1000000 << " microseconds" << endl;
-		sum_of_times += time_span;
-		time_table[((k + 1) / 2) - 1].push_back(time_span);
-
-		//test with random list -300,000 - 300,000
-		array.clear();
-		srand(time(NULL));
-		for (int i = 0; i < 1000; i++) {
-			int rand_num = rand() % 300000;
-			if (rand() % 2 == 1)
-				rand_num * -1;
-			array.push_back(rand_num);
-		}
-		start = timer::now();
-		Merge_Sort(array, 0, sizeof(array), k);
-		stop = timer::now();
-
-		time_span = chrono::duration_cast<chrono::duration<float>>(stop - start);
-		cout << "duration of k = " << k << " random = " << setprecision(5) << time_span.count() * 1000000 << " microseconds" << endl;
-		sum_of_times += time_span;
-		time_table[((k + 1) / 2) - 1].push_back(time_span);
-
-
-
-		//average the time
-		average_of_times = sum_of_times / 3;
-		cout << "average of k value " << k << " times = " << setprecision(5) << average_of_times.count() * 1000000 << " microseconds" << endl;
-		time_table[((k + 1) / 2) - 1].push_back(average_of_times);
-
 		cout << endl;
-
 	}
 
-	//calculate best K
-	chrono::duration<float> best = chrono::duration<float>::max();
-	int best_k;
-	for (int i = 0; i < 20; i++) {
-		if (time_table[i][3] < best) {
+	//find best K from previous tests
+	chrono::duration<float> best = timer::duration::max();
+	int best_k = 0;
+	for (int i = 0; i < time_table.size(); i++) {
+		if (time_table[i][3] <= best) {
 			best = time_table[i][3];
-			if (i == 0) {
-				best_k = 1;
-			}
-			else {
-				best_k = (i * 2) + 1;
-			}
+			best_k = i;
 		}
 	}
 
-	cout << "best k value = " << best_k << endl;
+	cout << "best K = " << best_k + 1 << " at: " << time_table[best_k][3].count() << endl;
 
-	//calculate k = 1 ordered list time in seconds
-	cout << "k = 1 ordered list times: " << endl;
-	cout << "sorted forward = " << time_table[0][0].count() << " seconds" << endl;
-	cout << "sorted backwards = " << time_table[0][1].count() << " seconds" << endl;
-	cout << endl;
+	//last 4 test cases
+	vector<chrono::duration<float>> edge_cases;
+	vector<int> array;
+	for (int i = 0; i < 300; i++) {
+		array.push_back(i + 1);
+	}
 
-	//calculate k = n ordered list time in seconds
-	cout << "k = 39 ordered list times: " << endl;
-	cout << "sorted forward = " << time_table[19][0].count() << " seconds" << endl;
-	cout << "sorted backwards = " << time_table[19][1].count() << " seconds" << endl;
-	cout << endl;
+	//test case with k = 1 ordered list
+	start = timer::now();
+	Merge_Sort(array, 0, sizeof(array), 1);
+	stop = timer::now();
 
-	//calculate k = 1 random list time in seconds
-	cout << "k = 1 random list time = " << time_table[0][2].count() << " seconds" << endl << endl;
+	edge_cases.push_back(chrono::duration_cast<chrono::duration<float>>(stop - start));
 
-	//calculate k = 39 random list time in seconds
-	cout << "k = 39 random list time = " << time_table[19][2].count() << " seconds" << endl << endl;
-	*/
+	//test case with k = n ordered list
+	start = timer::now();
+	Merge_Sort(array, 0, sizeof(array), sizeof(array));
+	stop = timer::now();
+
+	edge_cases.push_back(chrono::duration_cast<chrono::duration<float>>(stop - start));
+
+	//randomly sorted array tests
+	array.clear();
+	srand(time(NULL));
+	for (int i = 0; i < 300; i++) {
+		array.push_back(rand());
+	}
+	vector<int> array2 = array; //so we have the same randomly ordered list for both k = 1 and k = n
+
+	//test case with k = 1 random list
+	start = timer::now();
+	Merge_Sort(array, 0, sizeof(array), 1);
+	stop = timer::now();
+	edge_cases.push_back(chrono::duration_cast<chrono::duration<float>>(stop - start));
+
+	//test case with k = n random list
+	start = timer::now();
+	Merge_Sort(array2, 0, sizeof(array2), sizeof(array2));
+	stop = timer::now();
+	edge_cases.push_back(chrono::duration_cast<chrono::duration<float>>(stop - start));
+
+	cout << "K = 1 ordered list time: " << setprecision(10) << edge_cases[0].count() << endl;
+	cout << "K = n ordered list time: " << setprecision(10) << edge_cases[1].count() << endl;
+	cout << "K = 1 random list time: " << setprecision(10) << edge_cases[2].count() << endl;
+	cout << "K = n random list time: " << setprecision(10) << edge_cases[3].count() << endl;
+
+	//output to a csv file
+	ofstream outFile;
+	outFile.open("outData.csv");
+
+	for (int i = 0; i < time_table.size(); i++) {
+		outFile << i + 1 << ", " << time_table[i][0].count() << ", ";
+		outFile << time_table[i][1].count() << ", ";
+		outFile << time_table[i][2].count() << ", ";
+		outFile << time_table[i][3].count() << endl;
+	}
+
 
 	return;
 
